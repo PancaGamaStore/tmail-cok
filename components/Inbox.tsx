@@ -1,26 +1,14 @@
 import { useEffect, useState } from "react";
 
-interface Message {
-  id: string;
-  from: string;
-  subject: string;
-  preview: string;
-}
-
 export function Inbox({ email }: { email: string }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadInbox = async () => {
-    try {
-      const res = await fetch(`/api/inbox?email=${encodeURIComponent(email)}`);
-      const data = await res.json();
-      setMessages(data);
-    } catch (error) {
-      console.error("Gagal memuat inbox:", error);
-    } finally {
-      setLoading(false);
-    }
+    const res = await fetch(`/api/inbox?email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    setMessages(data);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -29,24 +17,24 @@ export function Inbox({ email }: { email: string }) {
     return () => clearInterval(interval);
   }, [email]);
 
-  if (loading)
-    return <p className="mt-6 text-zinc-400 animate-pulse">Memuat pesan...</p>;
-
+  if (loading) return <p className="mt-6 text-zinc-400">Memuat pesan...</p>;
   if (messages.length === 0)
-    return <p className="mt-6 text-zinc-500 italic">Belum ada pesan masuk.</p>;
+    return <p className="mt-6 text-zinc-500">Belum ada pesan masuk.</p>;
 
   return (
-    <div className="w-full max-w-2xl mt-6 space-y-4">
-      {messages.map((msg) => (
-        <div
-          key={msg.id}
-          className="bg-background-card border border-zinc-700 rounded-2xl p-4 shadow-md hover:shadow-lg transition"
-        >
-          <p className="text-sm text-zinc-400 mb-1">📩 Dari: <span className="font-medium">{msg.from}</span></p>
-          <p className="text-brand font-semibold text-lg">{msg.subject}</p>
-          <p className="text-sm mt-1 text-zinc-300">{msg.preview}</p>
-        </div>
-      ))}
+    <div className="w-full max-w-2xl mt-6 px-4">
+      <ul className="space-y-4">
+        {messages.map((msg: any) => (
+          <li
+            key={msg.id}
+            className="bg-background-card p-5 rounded-2xl border border-zinc-700 shadow-glow"
+          >
+            <p className="text-sm text-zinc-400 mb-1">Dari: {msg.from}</p>
+            <p className="text-lg font-bold text-white">{msg.subject}</p>
+            <p className="text-sm mt-2 text-zinc-300">{msg.preview}</p>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

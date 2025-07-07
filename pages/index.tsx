@@ -31,7 +31,7 @@ export default function Home() {
       <main className="min-h-screen bg-background-dark text-white font-sans flex flex-col items-center justify-center px-4 py-10">
         {/* Judul di tengah */}
         <h1 className="text-4xl font-bold text-center mb-8 text-brand shadow-glow">
-          📧 Temp Mail Cok
+          Temp Mail Cok
         </h1>
 
         {/* Email & Tombol */}

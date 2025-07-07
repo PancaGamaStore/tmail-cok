@@ -16,6 +16,10 @@ export default function Home() {
   const [showPinInput, setShowPinInput] = useState(false);
   const [pin, setPin] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+  const [restoreEmail, setRestoreEmail] = useState("");
+  const [restorePin, setRestorePin] = useState("");
+  const [restoreMessage, setRestoreMessage] = useState("");
+  const [restoreSuccess, setRestoreSuccess] = useState(false);
 
   const generateEmail = () => {
     const user = generateRandomUsername();
@@ -71,6 +75,26 @@ export default function Home() {
     setShowPinInput(false);
     setPin("");
     setTimeout(() => setSaveMessage(""), 3000);
+  };
+
+  const handleRestore = () => {
+    const savedEmails = JSON.parse(localStorage.getItem("saved_emails") || "{}");
+    if (!savedEmails[restoreEmail]) {
+      setRestoreMessage("Email tidak ditemukan atau belum disimpan.");
+      setRestoreSuccess(false);
+      return;
+    }
+
+    if (savedEmails[restoreEmail].pin === restorePin) {
+      setEmail(restoreEmail);
+      setUsername(restoreEmail.split("@")[0]);
+      localStorage.setItem("temp_email", restoreEmail);
+      setRestoreMessage("Berhasil dipulihkan!");
+      setRestoreSuccess(true);
+    } else {
+      setRestoreMessage("PIN salah. Coba lagi.");
+      setRestoreSuccess(false);
+    }
   };
 
   return (
@@ -151,7 +175,7 @@ export default function Home() {
         )}
 
         {/* Domain selector */}
-        <div className="mb-8">
+        <div className="mb-6">
           <select
             className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white shadow-inner"
             value={selectedDomain}
@@ -164,6 +188,39 @@ export default function Home() {
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Formulir Pulihkan Email */}
+        <div className="w-full max-w-md bg-background-card/30 border border-zinc-700 p-4 rounded-xl mb-6">
+          <h3 className="text-lg font-semibold text-brand mb-3">Pulihkan Email Lama</h3>
+          <div className="flex flex-col gap-3">
+            <input
+              type="text"
+              placeholder="Masukkan email kamu"
+              className="px-4 py-2 rounded bg-zinc-900 border border-zinc-700 text-white"
+              value={restoreEmail}
+              onChange={(e) => setRestoreEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="PIN (6 digit)"
+              className="px-4 py-2 rounded bg-zinc-900 border border-zinc-700 text-white"
+              maxLength={6}
+              value={restorePin}
+              onChange={(e) => setRestorePin(e.target.value)}
+            />
+            <button
+              onClick={handleRestore}
+              className="bg-brand hover:bg-brand-dark text-white rounded-xl px-4 py-2 shadow-glow transition"
+            >
+              Pulihkan Email
+            </button>
+            {restoreMessage && (
+              <p className={`text-sm mt-1 ${restoreSuccess ? "text-green-400" : "text-red-400"}`}>
+                {restoreMessage}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Inbox */}

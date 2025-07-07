@@ -4,7 +4,7 @@ const domains = ["okekang.my.id", "jaycok.my.id"];
 
 export default function Home() { const [email, setEmail] = useState(""); const [username, setUsername] = useState(""); const [selectedDomain, setSelectedDomain] = useState(domains[0]); const [isLoading, setIsLoading] = useState(false); const [showPinInput, setShowPinInput] = useState(false); const [pin, setPin] = useState(""); const [saveMessage, setSaveMessage] = useState("");
 
-const generateEmail = () => { const newUser = generateRandomUsername(); const newMail = ${newUser}@${selectedDomain}; setUsername(newUser); setEmail(newMail); localStorage.setItem("temp_email", newMail); };
+const generateEmail = () => { const newUser = generateRandomUsername(); const newMail = `${newUser}@${selectedDomain}`; setUsername(newUser); setEmail(newMail); localStorage.setItem("temp_email", newMail); };
 
 useEffect(() => { const saved = localStorage.getItem("temp_email"); if (saved) { setEmail(saved); } else { generateEmail(); } }, []);
 

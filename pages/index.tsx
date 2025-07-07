@@ -26,17 +26,18 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>TempMail - Generator</title>
+        <title>TempMail Generator</title>
       </Head>
-      <main className="min-h-screen bg-background-dark text-white font-sans flex flex-col items-center justify-center px-4 py-10">
-        {/* Judul di tengah */}
-        <h1 className="text-4xl font-bold text-center mb-8 text-brand shadow-glow">
-          Temp Mail Cok
-        </h1>
+      <main className="min-h-screen bg-background-dark text-white font-sans flex flex-col justify-start items-center px-4 py-10">
+        {/* Judul di atas tengah */}
+        <header className="w-full max-w-4xl text-center mb-8">
+          <h1 className="text-4xl font-extrabold text-brand">📧 TempMail Generator</h1>
+          <p className="text-zinc-400 mt-1 text-sm">Buat email sementara tanpa ribet</p>
+        </header>
 
-        {/* Email & Tombol */}
-        <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
-          <div className="bg-background-card px-5 py-3 rounded-xl border border-zinc-700 shadow-glow text-sm md:text-base">
+        {/* Email dan tombol */}
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+          <div className="bg-background-card px-5 py-3 rounded-xl border border-zinc-700 shadow-glow">
             {email}
           </div>
           <button
@@ -53,8 +54,15 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Kotak Inbox */}
+        {/* Kotak inbox */}
         <Inbox email={email} />
+
+        {/* Footer */}
+        <footer className="mt-16 text-sm text-zinc-500 border-t border-zinc-800 pt-6 w-full text-center">
+          <p>
+            © <span className="text-brand font-semibold">Masjjoooo</span> {new Date().getFullYear()}
+          </p>
+        </footer>
       </main>
     </>
   );

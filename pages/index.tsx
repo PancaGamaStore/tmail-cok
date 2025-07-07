@@ -26,14 +26,17 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>TempMail - Inbox</title>
+        <title>TempMail - Generator</title>
       </Head>
-      <main className="min-h-screen bg-background-dark text-white font-sans flex flex-col items-center px-4 py-10">
-        <h1 className="text-4xl font-bold mb-6 text-brand">
-          📧 TempMail Generator
+      <main className="min-h-screen bg-background-dark text-white font-sans flex flex-col items-center justify-center px-4 py-10">
+        {/* Judul di tengah */}
+        <h1 className="text-4xl font-bold text-center mb-8 text-brand shadow-glow">
+          📧 Temp Mail Cok
         </h1>
-        <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-          <div className="bg-background-card px-5 py-3 rounded-xl border border-zinc-700 shadow-glow">
+
+        {/* Email & Tombol */}
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-8">
+          <div className="bg-background-card px-5 py-3 rounded-xl border border-zinc-700 shadow-glow text-sm md:text-base">
             {email}
           </div>
           <button
@@ -49,6 +52,8 @@ export default function Home() {
             Ganti Email
           </button>
         </div>
+
+        {/* Kotak Inbox */}
         <Inbox email={email} />
       </main>
     </>

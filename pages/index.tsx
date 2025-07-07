@@ -181,7 +181,7 @@ export default function Home() {
         </footer>
 
         {/* Pop-up Ad */}
-        {showAdPopup && <AdPopup onClose={handleAdPopupClose} />}
+        {showAdPopup && <AdPopup />}
       </main>
     </>
   );

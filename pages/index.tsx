@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
-import { Inbox } from "../components/Inbox";
+import { Inbox } from "@/components/Inbox";
 import { generateRandomEmail } from "@/lib/generateEmail";
 
 export default function Home() {

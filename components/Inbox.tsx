@@ -28,8 +28,8 @@ export function Inbox({ email }: { email: string }) {
           setShowPopup(true);
 
           // Opsional: mainkan suara notifikasi
-          // const audio = new Audio("/notif.mp3");
-          // audio.play();
+          const audio = new Audio("/notif.mp3");
+          audio.play();
 
           // Sembunyikan popup setelah 5 detik
           setTimeout(() => {

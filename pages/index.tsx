@@ -1,110 +1,188 @@
-import { useState, useEffect } from "react"; import Head from "next/head"; import { Inbox } from "@/components/Inbox"; import { generateRandomUsername } from "@/lib/generateEmail"; import { AdBanner } from "@/components/AdBanner"; import { AdPopup } from "@/components/AdPopup";
+import { useState, useEffect } from "react";
+import Head from "next/head";
+import { Inbox } from "@/components/Inbox";
+import { generateRandomUsername } from "@/lib/generateEmail";
+import { AdBanner } from "@/components/AdBanner";
+import { AdPopup } from "@/components/AdPopup";
 
 const domains = ["okekang.my.id", "jaycok.my.id"];
 
-export default function Home() { const [email, setEmail] = useState(""); const [username, setUsername] = useState(""); const [selectedDomain, setSelectedDomain] = useState(domains[0]); const [isLoading, setIsLoading] = useState(false); const [showPinInput, setShowPinInput] = useState(false); const [pin, setPin] = useState(""); const [saveMessage, setSaveMessage] = useState("");
+export default function Home() {
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [selectedDomain, setSelectedDomain] = useState(domains[0]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showAdPopup, setShowAdPopup] = useState(false);
+  const [showPinInput, setShowPinInput] = useState(false);
+  const [pin, setPin] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
 
-const generateEmail = () => { const newUser = generateRandomUsername(); const newMail = `${newUser}@${selectedDomain}`; setUsername(newUser); setEmail(newMail); localStorage.setItem("temp_email", newMail); };
+  const generateEmail = () => {
+    const user = generateRandomUsername();
+    const mail = `${user}@${selectedDomain}`;
+    setUsername(user);
+    setEmail(mail);
+    localStorage.setItem("temp_email", mail);
+  };
 
-useEffect(() => { const saved = localStorage.getItem("temp_email"); if (saved) { setEmail(saved); } else { generateEmail(); } }, []);
+  useEffect(() => {
+    const saved = localStorage.getItem("temp_email");
+    if (saved) {
+      setEmail(saved);
+    } else {
+      generateEmail();
+    }
 
-const regenerate = () => { setIsLoading(true); setTimeout(() => { generateEmail(); setIsLoading(false); }, 3000); };
+    const timer = setTimeout(() => setShowAdPopup(true), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
-const handleDomainChange = (e: React.ChangeEvent<HTMLSelectElement>) => { setSelectedDomain(e.target.value); const newMail = ${username || generateRandomUsername()}@${e.target.value}; setEmail(newMail); localStorage.setItem("temp_email", newMail); };
+  const regenerate = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      generateEmail();
+      setIsLoading(false);
+    }, 3000);
+  };
 
-const handleSaveClick = () => { setShowPinInput(true); setSaveMessage(""); };
+  const handleDomainChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const domain = e.target.value;
+    setSelectedDomain(domain);
+    const mail = `${username || generateRandomUsername()}@${domain}`;
+    setEmail(mail);
+    localStorage.setItem("temp_email", mail);
+  };
 
-const handleSaveWithPin = () => { if (pin.length === 6 && /^[0-9]+$/.test(pin)) { const savedEmails = JSON.parse(localStorage.getItem("saved_emails") || "[]"); savedEmails.push({ email, pin }); localStorage.setItem("saved_emails", JSON.stringify(savedEmails)); setSaveMessage("✅ Email berhasil disimpan!"); setShowPinInput(false); setPin(""); } else { setSaveMessage("❌ PIN harus 6 digit angka."); } };
+  const handleAdPopupClose = () => {
+    setShowAdPopup(false);
+    setTimeout(() => setShowAdPopup(true), 5000);
+  };
 
-return ( <> <Head> <title>TempMail Generator</title> </Head> <main className="min-h-screen bg-background-dark text-white font-sans flex flex-col justify-start items-center px-4 py-10 relative overflow-hidden"> <header className="w-full max-w-4xl text-center mb-8"> <h1 className="text-4xl font-extrabold text-brand animate-fade-in"> T-Mail Cok </h1> <p className="text-zinc-400 mt-1 text-sm">Buat email sementara tanpa ribet</p> </header>
+  const handleSaveEmail = () => {
+    if (pin.length !== 6 || !/^\d+$/.test(pin)) {
+      setSaveMessage("PIN harus 6 digit angka.");
+      return;
+    }
 
-<div className="flex flex-col md:flex-row items-center gap-4 mb-6 animate-fade-in">
-      <div className="bg-background-card/40 backdrop-blur-md px-5 py-3 rounded-xl border border-zinc-700 shadow-glow min-w-[250px] text-center">
-        {isLoading ? (
-          <div className="flex items-center justify-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-brand animate-ping" />
-            <span className="text-sm text-zinc-400">Menghasilkan email...</span>
+    const savedEmails = JSON.parse(localStorage.getItem("saved_emails") || "{}");
+    savedEmails[email] = { pin };
+    localStorage.setItem("saved_emails", JSON.stringify(savedEmails));
+    setSaveMessage("Email berhasil disimpan!");
+    setShowPinInput(false);
+    setPin("");
+    setTimeout(() => setSaveMessage(""), 3000);
+  };
+
+  return (
+    <>
+      <Head>
+        <title>TempMail Generator</title>
+      </Head>
+      <main className="min-h-screen bg-background-dark text-white font-sans flex flex-col justify-start items-center px-4 py-10 relative overflow-hidden">
+        {/* Judul */}
+        <header className="w-full max-w-4xl text-center mb-8">
+          <h1 className="text-4xl font-extrabold text-brand animate-fade-in">
+            T-Mail Cok
+          </h1>
+          <p className="text-zinc-400 mt-1 text-sm">
+            Buat email sementara tanpa ribet
+          </p>
+        </header>
+
+        {/* Kotak Email + Tombol */}
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-4 animate-fade-in">
+          <div className="bg-background-card/40 backdrop-blur-md px-5 py-3 rounded-xl border border-zinc-700 shadow-glow min-w-[250px] text-center">
+            {isLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-4 h-4 rounded-full bg-brand animate-ping" />
+                <span className="text-sm text-zinc-400">Menghasilkan email...</span>
+              </div>
+            ) : (
+              email
+            )}
           </div>
-        ) : (
-          email
+
+          <button
+            className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-xl shadow-glow transition-all duration-200"
+            onClick={() => navigator.clipboard.writeText(email)}
+            disabled={isLoading}
+          >
+            Salin
+          </button>
+
+          <button
+            className={`bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl shadow-glow transition-all duration-200 ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={regenerate}
+            disabled={isLoading}
+          >
+            Ganti Email
+          </button>
+
+          <button
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow-glow transition-all duration-200"
+            onClick={() => setShowPinInput(true)}
+            disabled={isLoading}
+          >
+            Simpan
+          </button>
+        </div>
+
+        {/* Input PIN */}
+        {showPinInput && (
+          <div className="mb-4 flex flex-col items-center gap-2">
+            <input
+              type="password"
+              placeholder="Masukkan PIN (6 digit)"
+              className="px-4 py-2 rounded-lg bg-zinc-800 border border-zinc-600 text-white text-sm"
+              maxLength={6}
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+            />
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-xl text-sm"
+              onClick={handleSaveEmail}
+            >
+              Simpan Sekarang
+            </button>
+            {saveMessage && <p className="text-sm text-green-400">{saveMessage}</p>}
+          </div>
         )}
-      </div>
 
-      <button
-        className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-xl shadow-glow transition-all duration-200"
-        onClick={() => navigator.clipboard.writeText(email)}
-        disabled={isLoading}
-      >
-        Salin
-      </button>
+        {/* Domain selector */}
+        <div className="mb-8">
+          <select
+            className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white shadow-inner"
+            value={selectedDomain}
+            onChange={handleDomainChange}
+            disabled={isLoading}
+          >
+            {domains.map((d) => (
+              <option key={d} value={d}>
+                @{d}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <button
-        className={`bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl shadow-glow transition-all duration-200 ${
-          isLoading ? "opacity-50 cursor-not-allowed" : ""
-        }`}
-        onClick={regenerate}
-        disabled={isLoading}
-      >
-        Ganti Email
-      </button>
+        {/* Inbox */}
+        <Inbox email={email} />
 
-      <button
-        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow-glow transition-all duration-200"
-        onClick={handleSaveClick}
-        disabled={isLoading}
-      >
-        Simpan Email
-      </button>
-    </div>
+        {/* Banner Ad */}
+        <AdBanner />
 
-    {showPinInput && (
-      <div className="mb-4 text-center">
-        <input
-          type="password"
-          placeholder="Masukkan PIN 6 digit"
-          maxLength={6}
-          className="bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-2 text-white"
-          value={pin}
-          onChange={(e) => setPin(e.target.value)}
-        />
-        <button
-          className="ml-3 bg-brand px-4 py-2 rounded-xl text-white shadow-glow"
-          onClick={handleSaveWithPin}
-        >
-          Simpan
-        </button>
-        {saveMessage && <p className="mt-2 text-sm text-zinc-400">{saveMessage}</p>}
-      </div>
-    )}
+        {/* Footer */}
+        <footer className="mt-16 text-sm text-zinc-500 border-t border-zinc-800 pt-6 w-full text-center">
+          <p>
+            © <span className="text-brand font-semibold">Masjjoooo</span>{" "}
+            {new Date().getFullYear()}
+          </p>
+        </footer>
 
-    <div className="mb-8">
-      <select
-        className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-white shadow-inner"
-        value={selectedDomain}
-        onChange={handleDomainChange}
-        disabled={isLoading}
-      >
-        {domains.map((d) => (
-          <option key={d} value={d}>
-            @{d}
-          </option>
-        ))}
-      </select>
-    </div>
-
-    <Inbox email={email} />
-
-    <AdBanner />
-
-    <footer className="mt-16 text-sm text-zinc-500 border-t border-zinc-800 pt-6 w-full text-center">
-      <p>
-        © <span className="text-brand font-semibold">Masjjoooo</span> {new Date().getFullYear()}
-      </p>
-    </footer>
-
-    <AdPopup />
-  </main>
-</>
-
-); }
-
+        {/* Pop-up Ad */}
+        {showAdPopup && <AdPopup onClose={handleAdPopupClose} />}
+      </main>
+    </>
+  );
+}

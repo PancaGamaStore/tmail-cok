@@ -27,34 +27,29 @@ export default function Home() {
     <>
       <Head>
         <title>TempMail - Inbox</title>
-        <meta name="theme-color" content="#0f0f1a" />
       </Head>
-      <main className="min-h-screen bg-background-dark text-white flex flex-col items-center px-4 py-10 font-sans">
-        <h1 className="text-4xl font-bold mb-6 text-brand">📧 TempMail</h1>
-
-        <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
-          <div className="bg-background-card px-6 py-3 rounded-2xl border border-zinc-700 text-lg shadow-md">
+      <main className="min-h-screen bg-background-dark text-white font-sans flex flex-col items-center px-4 py-10">
+        <h1 className="text-4xl font-bold mb-6 text-brand">
+          📧 TempMail Generator
+        </h1>
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+          <div className="bg-background-card px-5 py-3 rounded-xl border border-zinc-700 shadow-glow">
             {email}
           </div>
-
           <button
-            className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-2xl shadow-glow"
+            className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-xl shadow-glow"
             onClick={() => navigator.clipboard.writeText(email)}
           >
-            📋 Salin
+            Salin
           </button>
-
           <button
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-2xl"
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl shadow-glow"
             onClick={regenerate}
           >
-            ♻️ Ganti Email
+            Ganti Email
           </button>
         </div>
-
-        <div className="w-full max-w-2xl">
-          <Inbox email={email} />
-        </div>
+        <Inbox email={email} />
       </main>
     </>
   );

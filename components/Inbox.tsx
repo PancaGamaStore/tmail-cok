@@ -5,6 +5,7 @@ type Message = {
   from: string;
   subject: string;
   preview: string;
+  [key: string]: any; // agar JSON lengkap bisa ditampilkan
 };
 
 export function Inbox({ email }: { email: string }) {
@@ -13,6 +14,7 @@ export function Inbox({ email }: { email: string }) {
   const [error, setError] = useState("");
   const [newMessageId, setNewMessageId] = useState<string | null>(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [developerMode, setDeveloperMode] = useState(false);
 
   const loadInbox = async () => {
     try {
@@ -27,11 +29,10 @@ export function Inbox({ email }: { email: string }) {
           setNewMessageId(latest.id);
           setShowPopup(true);
 
-          // Opsional: mainkan suara notifikasi
+          // Suara notifikasi
           const audio = new Audio("/notif.mp3");
           audio.play();
 
-          // Sembunyikan popup setelah 5 detik
           setTimeout(() => {
             setShowPopup(false);
             setNewMessageId(null);
@@ -61,8 +62,29 @@ export function Inbox({ email }: { email: string }) {
 
   return (
     <>
-      {/* Inbox List */}
       <div className="w-full max-w-2xl mt-6 px-4 animate-fade-in">
+
+        {/* Mode Developer Toggle */}
+        <div className="mb-4 flex items-center justify-between">
+          <span className="text-sm text-zinc-400">🛠️ Mode Developer</span>
+          <label className="inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={developerMode}
+              onChange={() => setDeveloperMode(!developerMode)}
+            />
+            <div className="w-11 h-6 bg-zinc-600 rounded-full p-1 flex items-center transition-all">
+              <div
+                className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${
+                  developerMode ? "translate-x-5" : ""
+                }`}
+              ></div>
+            </div>
+          </label>
+        </div>
+
+        {/* List Pesan */}
         <ul className="space-y-4">
           {messages.map((msg) => (
             <li
@@ -81,6 +103,13 @@ export function Inbox({ email }: { email: string }) {
                 <p className="text-lg font-semibold text-white">{msg.subject}</p>
                 <p className="text-sm mt-1 text-zinc-300">{msg.preview}</p>
               </div>
+
+              {/* Developer JSON view */}
+              {developerMode && (
+                <pre className="mt-4 text-xs bg-zinc-900 text-green-400 p-3 rounded-lg overflow-x-auto">
+                  {JSON.stringify(msg, null, 2)}
+                </pre>
+              )}
             </li>
           ))}
         </ul>

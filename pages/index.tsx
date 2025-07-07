@@ -27,27 +27,34 @@ export default function Home() {
     <>
       <Head>
         <title>TempMail - Inbox</title>
+        <meta name="theme-color" content="#0f0f1a" />
       </Head>
-      <main className="min-h-screen bg-zinc-900 text-white flex flex-col items-center px-4 py-10">
-        <h1 className="text-3xl font-bold mb-4">📧 TempMail</h1>
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          <div className="bg-zinc-800 px-4 py-2 rounded-lg border border-zinc-700">
+      <main className="min-h-screen bg-background-dark text-white flex flex-col items-center px-4 py-10 font-sans">
+        <h1 className="text-4xl font-bold mb-6 text-brand">📧 TempMail</h1>
+
+        <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
+          <div className="bg-background-card px-6 py-3 rounded-2xl border border-zinc-700 text-lg shadow-md">
             {email}
           </div>
+
           <button
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition"
+            className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-2xl shadow-glow"
             onClick={() => navigator.clipboard.writeText(email)}
           >
-            Salin
+            📋 Salin
           </button>
+
           <button
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-2xl"
             onClick={regenerate}
           >
-            Ganti Email
+            ♻️ Ganti Email
           </button>
         </div>
-        <Inbox email={email} />
+
+        <div className="w-full max-w-2xl">
+          <Inbox email={email} />
+        </div>
       </main>
     </>
   );

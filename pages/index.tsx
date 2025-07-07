@@ -14,18 +14,24 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [showAdPopup, setShowAdPopup] = useState(false);
 
+  // Fungsi untuk generate email
+  const generateEmail = () => {
+    const newUser = generateRandomUsername();
+    const newMail = `${newUser}@${selectedDomain}`;
+    setUsername(newUser);
+    setEmail(newMail);
+    localStorage.setItem("temp_email", newMail);
+  };
+
   useEffect(() => {
     const saved = localStorage.getItem("temp_email");
     if (saved) {
       setEmail(saved);
     } else {
-      const newUser = generateRandomUsername();
-      const newMail = `${newUser}@${selectedDomain}`;
-      setUsername(newUser);
-      setEmail(newMail);
-      localStorage.setItem("temp_email", newMail);
+      generateEmail();
     }
 
+    // Tampilkan popup pertama kali setelah 5 detik
     const timer = setTimeout(() => setShowAdPopup(true), 5000);
     return () => clearTimeout(timer);
   }, []);
@@ -33,11 +39,7 @@ export default function Home() {
   const regenerate = () => {
     setIsLoading(true);
     setTimeout(() => {
-      const newUser = generateRandomUsername();
-      const newMail = `${newUser}@${selectedDomain}`;
-      setUsername(newUser);
-      setEmail(newMail);
-      localStorage.setItem("temp_email", newMail);
+      generateEmail();
       setIsLoading(false);
     }, 3000);
   };
@@ -47,6 +49,12 @@ export default function Home() {
     const newMail = `${username || generateRandomUsername()}@${e.target.value}`;
     setEmail(newMail);
     localStorage.setItem("temp_email", newMail);
+  };
+
+  // Setiap kali popup ditutup, buka lagi 5 detik kemudian
+  const handleAdPopupClose = () => {
+    setShowAdPopup(false);
+    setTimeout(() => setShowAdPopup(true), 5000);
   };
 
   return (
@@ -124,8 +132,8 @@ export default function Home() {
           </p>
         </footer>
 
-        {/* Pop-up Ad */}
-        {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
+        {/* Pop-up Ad (selalu muncul ulang setiap 5 detik setelah ditutup) */}
+        {showAdPopup && <AdPopup onClose={handleAdPopupClose} />}
       </main>
     </>
   );

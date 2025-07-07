@@ -12,7 +12,6 @@ export default function Home() {
   const [username, setUsername] = useState("");
   const [selectedDomain, setSelectedDomain] = useState(domains[0]);
   const [isLoading, setIsLoading] = useState(false);
-  const [showAdPopup, setShowAdPopup] = useState(false);
 
   // Fungsi untuk generate email
   const generateEmail = () => {
@@ -30,10 +29,6 @@ export default function Home() {
     } else {
       generateEmail();
     }
-
-    // Tampilkan popup pertama kali setelah 5 detik
-    const timer = setTimeout(() => setShowAdPopup(true), 5000);
-    return () => clearTimeout(timer);
   }, []);
 
   const regenerate = () => {
@@ -49,12 +44,6 @@ export default function Home() {
     const newMail = `${username || generateRandomUsername()}@${e.target.value}`;
     setEmail(newMail);
     localStorage.setItem("temp_email", newMail);
-  };
-
-  // Setiap kali popup ditutup, buka lagi 5 detik kemudian
-  const handleAdPopupClose = () => {
-    setShowAdPopup(false);
-    setTimeout(() => setShowAdPopup(true), 5000);
   };
 
   return (
@@ -133,7 +122,7 @@ export default function Home() {
         </footer>
 
         {/* Pop-up Ad (selalu muncul ulang setiap 5 detik setelah ditutup) */}
-        {showAdPopup && <AdPopup onClose={handleAdPopupClose} />}
+        <AdPopup />
       </main>
     </>
   );

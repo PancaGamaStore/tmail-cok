@@ -8,21 +8,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Email diperlukan" });
   }
 
-  const client = await clientPromise;
-  const db = client.db("tempmail");
-  const messages = await db
-    .collection("emails")
-    .find({ email })
-    .sort({ createdAt: -1 })
-    .toArray();
+  try {
+    const client = await clientPromise;
+    const db = client.db("tempmail");
 
-  const response = messages.map((msg) => ({
-    id: msg._id,
-    from: msg.from,
-    subject: msg.subject,
-    preview: msg.preview,
-    createdAt: msg.createdAt,
-  }));
+    const messages = await db
+      .collection("emails")
+      .find({ to: email })
+      .sort({ timestamp: -1 })
+      .toArray();
 
-  res.json(response);
+    const response = messages.map((msg) => ({
+      id: msg._id,
+      from: msg.from,
+      subject: msg.subject,
+      preview: msg.body?.slice(0, 100) || "(Tidak ada isi)",
+      createdAt: msg.timestamp || Date.now(),
+    }));
+
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ error: "Terjadi kesalahan server" });
+  }
 }

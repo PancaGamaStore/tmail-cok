@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .toArray();
 
     const response = messages.map((msg) => ({
-      id: msg._id,
+      id: msg._id.toString(),
       from: msg.from,
       subject: msg.subject,
       preview: msg.body?.slice(0, 100) || "(Tidak ada isi)",

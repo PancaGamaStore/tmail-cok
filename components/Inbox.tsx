@@ -18,7 +18,7 @@ export function Inbox({ email }: { email: string }) {
   const [developerMode, setDeveloperMode] = useState(false);
   const [history, setHistory] = useState<Message[][]>([]);
 
-  const backendUrl = "http://<VPS-IP>:3000"; // Ganti dengan IP atau domain VPS Anda
+  const backendUrl = "http://49.12.82.34:3000"; // Ganti dengan IP atau domain VPS Anda
 
   const loadInbox = async () => {
     if (!email) {

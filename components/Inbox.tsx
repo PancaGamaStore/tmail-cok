@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { MongoClient, WithId, Document, ObjectId } from "mongodb";
 
 interface Message {
   _id: string;
@@ -18,10 +17,6 @@ export function Inbox({ email }: { email: string }) {
   const [developerMode, setDeveloperMode] = useState(false);
   const [history, setHistory] = useState<Message[][]>([]);
 
-  // Konfigurasi MongoDB
-  const mongoUri = process.env.MONGODB_URI || "mongodb+srv://masjjoooo:Johangame1002@cluster0.iq7hpxw.mongodb.net/tempmail?retryWrites=true&w=majority&appName=Cluster0";
-  const client = new MongoClient(mongoUri);
-
   const loadInbox = async () => {
     if (!email) {
       setError("Alamat email tidak tersedia.");
@@ -30,34 +25,24 @@ export function Inbox({ email }: { email: string }) {
     }
 
     try {
-      await client.connect();
-      const db = client.db("tempmail");
-      const emailsCol = db.collection("emails");
+      const response = await fetch(`/api/inbox?email=${encodeURIComponent(email)}`);
+      const data = await response.json();
 
-      // Query email berdasarkan alamat tujuan
-      const rawData: WithId<Document>[] = await emailsCol
-        .find({ to: email.toLowerCase() })
-        .sort({ timestamp: -1 })
-        .toArray();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch inbox");
+      }
 
-      // Transformasi data ke tipe Message
-      const data: Message[] = rawData.map((doc) => ({
-        _id: doc._id.toString(), // Konversi ObjectId ke string
-        from: typeof doc.from === "string" && doc.from ? doc.from : "Unknown Sender",
-        subject: typeof doc.subject === "string" && doc.subject ? doc.subject : "No Subject",
-        body: typeof doc.body === "string" && doc.body ? doc.body : "No Content",
-        timestamp: typeof doc.timestamp === "number" && doc.timestamp ? doc.timestamp : Date.now() / 1000,
-      }));
+      const messages: Message[] = data.messages || [];
 
       // Simpan ke riwayat (maks 5)
       setHistory((prev) => {
-        const updated = [data, ...prev].slice(0, 5);
+        const updated = [messages, ...prev].slice(0, 5);
         return updated;
       });
 
       // Deteksi pesan baru
-      if (data.length > messages.length) {
-        const latest = data[0];
+      if (messages.length > messages.length) {
+        const latest = messages[0];
         if (!messages.some((msg) => msg._id === latest._id)) {
           setNewMessageId(latest._id);
           setShowPopup(true);
@@ -69,13 +54,12 @@ export function Inbox({ email }: { email: string }) {
         }
       }
 
-      setMessages(data);
+      setMessages(messages);
       setError("");
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan saat mengambil pesan dari MongoDB.");
-      console.error("MongoDB fetch error:", err);
+      setError(err.message || "Terjadi kesalahan saat mengambil pesan.");
+      console.error("Fetch inbox error:", err);
     } finally {
-      await client.close();
       setLoading(false);
     }
   };

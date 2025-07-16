@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import { MongoClient, WithId, Document } from "mongodb";
+import { MongoClient, WithId, Document, ObjectId } from "mongodb";
 
-type Message = {
+interface Message {
   _id: string;
   from: string;
   subject: string;
   body: string;
   timestamp: number;
-  [key: string]: any;
-};
+}
 
 export function Inbox({ email }: { email: string }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -43,12 +42,11 @@ export function Inbox({ email }: { email: string }) {
 
       // Transformasi data ke tipe Message
       const data: Message[] = rawData.map((doc) => ({
-        _id: doc._id.toString(),
-        from: typeof doc.from === "string" ? doc.from : "Unknown Sender",
-        subject: typeof doc.subject === "string" ? doc.subject : "No Subject",
-        body: typeof doc.body === "string" ? doc.body : "No Content",
-        timestamp: typeof doc.timestamp === "number" ? doc.timestamp : Date.now() / 1000,
-        ...doc,
+        _id: doc._id.toString(), // Konversi ObjectId ke string
+        from: typeof doc.from === "string" && doc.from ? doc.from : "Unknown Sender",
+        subject: typeof doc.subject === "string" && doc.subject ? doc.subject : "No Subject",
+        body: typeof doc.body === "string" && doc.body ? doc.body : "No Content",
+        timestamp: typeof doc.timestamp === "number" && doc.timestamp ? doc.timestamp : Date.now() / 1000,
       }));
 
       // Simpan ke riwayat (maks 5)

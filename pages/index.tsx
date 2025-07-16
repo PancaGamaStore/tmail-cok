@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
+import { MongoClient } from "mongodb";
 import { Inbox } from "@/components/Inbox";
 import { generateRandomUsername } from "@/lib/generateEmail";
 import { AdBanner } from "@/components/AdBanner";
@@ -21,18 +22,42 @@ export default function Home() {
   const [restoreMessage, setRestoreMessage] = useState("");
   const [restoreSuccess, setRestoreSuccess] = useState(false);
 
-  const generateEmail = () => {
-    const user = generateRandomUsername();
-    const mail = `${user}@${selectedDomain}`;
-    setUsername(user);
-    setEmail(mail);
-    localStorage.setItem("temp_email", mail);
+  // Konfigurasi MongoDB
+  const mongoUri = "mongodb+srv://masjjoooo:Johangame1002@cluster0.iq7hpxw.mongodb.net/tempmail?retryWrites=true&w=majority&appName=Cluster0";
+  const client = new MongoClient(mongoUri);
+
+  const generateEmail = async () => {
+    setIsLoading(true);
+    try {
+      const user = generateRandomUsername();
+      const mail = `${user}@${selectedDomain}`;
+      
+      // Simpan ke MongoDB
+      await client.connect();
+      const db = client.db("tempmail");
+      const tempEmailsCol = db.collection("temp_emails");
+      await tempEmailsCol.insertOne({
+        email: mail,
+        createdAt: Date.now() / 1000,
+      });
+
+      setUsername(user);
+      setEmail(mail);
+      localStorage.setItem("temp_email", mail);
+    } catch (err: any) {
+      console.error("MongoDB generate error:", err);
+      setSaveMessage("Gagal menghasilkan email.");
+    } finally {
+      await client.close();
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
     const saved = localStorage.getItem("temp_email");
     if (saved) {
       setEmail(saved);
+      setUsername(saved.split("@")[0]);
     } else {
       generateEmail();
     }
@@ -49,12 +74,30 @@ export default function Home() {
     }, 3000);
   };
 
-  const handleDomainChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleDomainChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const domain = e.target.value;
     setSelectedDomain(domain);
-    const mail = `${username || generateRandomUsername()}@${domain}`;
-    setEmail(mail);
-    localStorage.setItem("temp_email", mail);
+    const user = username || generateRandomUsername();
+    const mail = `${user}@${domain}`;
+    
+    try {
+      await client.connect();
+      const db = client.db("tempmail");
+      const tempEmailsCol = db.collection("temp_emails");
+      await tempEmailsCol.insertOne({
+        email: mail,
+        createdAt: Date.now() / 1000,
+      });
+
+      setEmail(mail);
+      setUsername(user);
+      localStorage.setItem("temp_email", mail);
+    } catch (err: any) {
+      console.error("MongoDB domain change error:", err);
+      setSaveMessage("Gagal mengubah domain.");
+    } finally {
+      await client.close();
+    }
   };
 
   const handleAdPopupClose = () => {
@@ -122,14 +165,14 @@ export default function Home() {
                 <span className="text-sm text-zinc-400">Menghasilkan email...</span>
               </div>
             ) : (
-              email
+              email || "Belum ada email"
             )}
           </div>
 
           <button
             className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-xl shadow-glow transition-all duration-200"
             onClick={() => navigator.clipboard.writeText(email)}
-            disabled={isLoading}
+            disabled={isLoading || !email}
           >
             Salin
           </button>
@@ -147,7 +190,7 @@ export default function Home() {
           <button
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl shadow-glow transition-all duration-200"
             onClick={() => setShowPinInput(true)}
-            disabled={isLoading}
+            disabled={isLoading || !email}
           >
             Simpan
           </button>
@@ -224,7 +267,7 @@ export default function Home() {
         </div>
 
         {/* Inbox */}
-        <Inbox email={email} />
+        {email && <Inbox email={email} />}
 
         {/* Banner Ad */}
         <AdBanner />

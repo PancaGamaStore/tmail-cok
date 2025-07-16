@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 
 type Message = {
-  id: string;
+  _id: string; // ID dari MongoDB
   from: string;
   subject: string;
-  preview: string;
+  body: string; // Menggantikan preview
+  timestamp: number;
   [key: string]: any;
 };
 
@@ -17,11 +18,22 @@ export function Inbox({ email }: { email: string }) {
   const [developerMode, setDeveloperMode] = useState(false);
   const [history, setHistory] = useState<Message[][]>([]);
 
+  const backendUrl = "http://<VPS-IP>:3000"; // Ganti dengan IP atau domain VPS Anda
+
   const loadInbox = async () => {
+    if (!email) {
+      setError("Alamat email tidak tersedia.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch(`/api/inbox?email=${encodeURIComponent(email)}`);
-      if (!res.ok) throw new Error("Gagal mengambil pesan.");
-      const data = await res.json();
+      const res = await fetch(`${backendUrl}/inbox/${encodeURIComponent(email)}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error(`Gagal mengambil pesan: ${res.statusText}`);
+      const data: Message[] = await res.json();
 
       // Simpan ke riwayat (maks 5)
       setHistory((prev) => {
@@ -32,10 +44,10 @@ export function Inbox({ email }: { email: string }) {
       // Deteksi pesan baru
       if (data.length > messages.length) {
         const latest = data[0];
-        if (!messages.some((msg) => msg.id === latest.id)) {
-          setNewMessageId(latest.id);
+        if (!messages.some((msg) => msg._id === latest._id)) {
+          setNewMessageId(latest._id);
           setShowPopup(true);
-          new Audio("/notif.mp3").play();
+          new Audio("/notif.mp3").play().catch((err) => console.error("Error playing sound:", err));
           setTimeout(() => {
             setShowPopup(false);
             setNewMessageId(null);
@@ -46,7 +58,8 @@ export function Inbox({ email }: { email: string }) {
       setMessages(data);
       setError("");
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan.");
+      setError(err.message || "Terjadi kesalahan saat mengambil pesan.");
+      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -57,7 +70,7 @@ export function Inbox({ email }: { email: string }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `email-${msg.id}.json`;
+    a.download = `email-${msg._id}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -100,9 +113,9 @@ export function Inbox({ email }: { email: string }) {
         <ul className="space-y-4">
           {messages.map((msg) => (
             <li
-              key={msg.id}
+              key={msg._id}
               className={`bg-white/5 backdrop-blur-md border border-zinc-700 rounded-2xl shadow-glow p-5 transition-all duration-500 hover:scale-[1.01] hover:shadow-xl ${
-                newMessageId === msg.id ? "ring-2 ring-brand" : ""
+                newMessageId === msg._id ? "ring-2 ring-brand" : ""
               }`}
             >
               <div className="flex justify-between items-start gap-3 mb-2">
@@ -121,7 +134,7 @@ export function Inbox({ email }: { email: string }) {
               </div>
               <div className="border-t border-zinc-700 pt-3">
                 <p className="text-lg font-semibold text-white">{msg.subject}</p>
-                <p className="text-sm mt-1 text-zinc-300">{msg.preview}</p>
+                <p className="text-sm mt-1 text-zinc-300">{msg.body}</p>
               </div>
               {developerMode && (
                 <pre className="mt-4 text-xs bg-zinc-900 text-green-400 p-3 rounded-lg overflow-x-auto">

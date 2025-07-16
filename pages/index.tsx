@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
-import { MongoClient } from "mongodb";
 import { Inbox } from "@/components/Inbox";
 import { generateRandomUsername } from "@/lib/generateEmail";
 import { AdBanner } from "@/components/AdBanner";
@@ -22,33 +21,28 @@ export default function Home() {
   const [restoreMessage, setRestoreMessage] = useState("");
   const [restoreSuccess, setRestoreSuccess] = useState(false);
 
-  // Konfigurasi MongoDB
-  const mongoUri = "mongodb+srv://masjjoooo:Johangame1002@cluster0.iq7hpxw.mongodb.net/tempmail?retryWrites=true&w=majority&appName=Cluster0";
-  const client = new MongoClient(mongoUri);
-
   const generateEmail = async () => {
     setIsLoading(true);
     try {
-      const user = generateRandomUsername();
-      const mail = `${user}@${selectedDomain}`;
-      
-      // Simpan ke MongoDB
-      await client.connect();
-      const db = client.db("tempmail");
-      const tempEmailsCol = db.collection("temp_emails");
-      await tempEmailsCol.insertOne({
-        email: mail,
-        createdAt: Date.now() / 1000,
+      const response = await fetch("/api/generate-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: selectedDomain }),
       });
 
-      setUsername(user);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate email");
+      }
+
+      const mail = data.email;
+      setUsername(mail.split("@")[0]);
       setEmail(mail);
       localStorage.setItem("temp_email", mail);
     } catch (err: any) {
-      console.error("MongoDB generate error:", err);
+      console.error("Generate email error:", err);
       setSaveMessage("Gagal menghasilkan email.");
     } finally {
-      await client.close();
       setIsLoading(false);
     }
   };
@@ -79,24 +73,25 @@ export default function Home() {
     setSelectedDomain(domain);
     const user = username || generateRandomUsername();
     const mail = `${user}@${domain}`;
-    
+
     try {
-      await client.connect();
-      const db = client.db("tempmail");
-      const tempEmailsCol = db.collection("temp_emails");
-      await tempEmailsCol.insertOne({
-        email: mail,
-        createdAt: Date.now() / 1000,
+      const response = await fetch("/api/generate-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain }),
       });
 
-      setEmail(mail);
-      setUsername(user);
-      localStorage.setItem("temp_email", mail);
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to generate email");
+      }
+
+      setEmail(data.email);
+      setUsername(data.email.split("@")[0]);
+      localStorage.setItem("temp_email", data.email);
     } catch (err: any) {
-      console.error("MongoDB domain change error:", err);
+      console.error("Domain change error:", err);
       setSaveMessage("Gagal mengubah domain.");
-    } finally {
-      await client.close();
     }
   };
 

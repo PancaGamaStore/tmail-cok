@@ -5,7 +5,7 @@ import { generateRandomUsername } from "@/lib/generateEmail";
 import { AdBanner } from "@/components/AdBanner";
 import { AdPopup } from "@/components/AdPopup";
 
-const domains = ["okekang.my.id", "jaycok.my.id"];
+const domains = ["okekang.my.id"];
 
 export default function Home() {
   const [email, setEmail] = useState("");

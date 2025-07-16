@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
+import { MongoClient } from "mongodb";
 
 type Message = {
-  _id: string; // ID dari MongoDB
+  _id: string;
   from: string;
   subject: string;
-  body: string; // Menggantikan preview
+  body: string;
   timestamp: number;
   [key: string]: any;
 };
@@ -18,7 +19,9 @@ export function Inbox({ email }: { email: string }) {
   const [developerMode, setDeveloperMode] = useState(false);
   const [history, setHistory] = useState<Message[][]>([]);
 
-  const backendUrl = "http://49.12.82.34:3000"; // Ganti dengan IP atau domain VPS Anda
+  // Konfigurasi MongoDB
+  const mongoUri = "mongodb+srv://masjjoooo:Johangame1002@cluster0.iq7hpxw.mongodb.net/tempmail?retryWrites=true&w=majority&appName=Cluster0";
+  const client = new MongoClient(mongoUri);
 
   const loadInbox = async () => {
     if (!email) {
@@ -28,12 +31,15 @@ export function Inbox({ email }: { email: string }) {
     }
 
     try {
-      const res = await fetch(`${backendUrl}/inbox/${encodeURIComponent(email)}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) throw new Error(`Gagal mengambil pesan: ${res.statusText}`);
-      const data: Message[] = await res.json();
+      await client.connect();
+      const db = client.db("tempmail");
+      const emailsCol = db.collection("emails");
+
+      // Query email berdasarkan alamat tujuan
+      const data: Message[] = await emailsCol
+        .find({ to: email.toLowerCase() })
+        .sort({ timestamp: -1 })
+        .toArray();
 
       // Simpan ke riwayat (maks 5)
       setHistory((prev) => {
@@ -58,9 +64,10 @@ export function Inbox({ email }: { email: string }) {
       setMessages(data);
       setError("");
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan saat mengambil pesan.");
-      console.error("Fetch error:", err);
+      setError(err.message || "Terjadi kesalahan saat mengambil pesan dari MongoDB.");
+      console.error("MongoDB fetch error:", err);
     } finally {
+      await client.close();
       setLoading(false);
     }
   };

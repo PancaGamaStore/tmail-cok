@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MongoClient } from "mongodb";
+import { MongoClient, WithId } from "mongodb";
 
 type Message = {
   _id: string;
@@ -20,7 +20,7 @@ export function Inbox({ email }: { email: string }) {
   const [history, setHistory] = useState<Message[][]>([]);
 
   // Konfigurasi MongoDB
-  const mongoUri = "mongodb+srv://masjjoooo:Johangame1002@cluster0.iq7hpxw.mongodb.net/tempmail?retryWrites=true&w=majority&appName=Cluster0";
+  const mongoUri = process.env.MONGODB_URI || "mongodb+srv://masjjoooo:Johangame1002@cluster0.iq7hpxw.mongodb.net/tempmail?retryWrites=true&w=majority&appName=Cluster0";
   const client = new MongoClient(mongoUri);
 
   const loadInbox = async () => {
@@ -36,10 +36,20 @@ export function Inbox({ email }: { email: string }) {
       const emailsCol = db.collection("emails");
 
       // Query email berdasarkan alamat tujuan
-      const data: Message[] = await emailsCol
+      const rawData: WithId<Document>[] = await emailsCol
         .find({ to: email.toLowerCase() })
         .sort({ timestamp: -1 })
         .toArray();
+
+      // Transformasi data ke tipe Message
+      const data: Message[] = rawData.map((doc) => ({
+        _id: doc._id.toString(),
+        from: doc.from || "Unknown Sender",
+        subject: doc.subject || "No Subject",
+        body: doc.body || "No Content",
+        timestamp: doc.timestamp || Date.now() / 1000,
+        ...doc,
+      }));
 
       // Simpan ke riwayat (maks 5)
       setHistory((prev) => {
